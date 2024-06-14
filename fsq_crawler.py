@@ -6,6 +6,7 @@ from tools import load_url_list, save
 from tqdm import tqdm
 import json 
 import yaml 
+import datetime
 from fake_useragent import UserAgent
 
 
@@ -94,6 +95,7 @@ class FoursquareCrawler:
                 parsed_venue = json.loads(venue)
                 fsq_data['checkin'] = parsed_checkin
                 fsq_data['venue'] = parsed_venue
+                fsq_data['time'] = parsed_checkin['createdAt']
                 break
         return fsq_data 
 
@@ -106,8 +108,9 @@ class FoursquareCrawler:
         name = parsed_data["venue"]["name"]
         uid = parsed_data["checkin"]["user"]["id"]
         fsq_id = parsed_data["venue"]["id"]
+        time = datetime.datetime.fromtimestamp(parsed_data["time"]).strftime("%Y-%m-%d %H:%M:%S")
 
-        checkin_metadata = {"fsq_id": fsq_id, "name":name,  
+        checkin_metadata = {"fsq_id": fsq_id, "name":name, "time": time,
                         "category": category_infors, "location":location_infors,
                         "uid": uid, "location_stats": location_stats}
         return checkin_metadata
@@ -119,6 +122,7 @@ class FoursquareCrawler:
         *输出字段介绍*:
         - fsq_id: foursquare的POI地点id, 例如
         - name: POI的名字, e.g., Subway Chikusa Station
+        - time: 签到的时间, e.g., '2021-07-01 12:00:00'
         - category: 地点的类别信息
             - category['id']: 类别的id, e.g., '4bf58dd8d48988d1fd931735'
             - category['name']: 类别的名字, e.g., 'Metro Station'

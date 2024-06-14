@@ -23,6 +23,7 @@ A crawler used to crawl foursquare check-in data.
 {
     "fsq_id": "4b89fd41f964a520685a32e3",
     "name": "Tokyo International (Haneda) Airport (HND)",
+    "time": "2019-04-24 06:40:42",
     "category": [
         {
             "id": "63be6904847c3692a84b9c29",
@@ -87,6 +88,7 @@ python batch_run.py --pool_size 200  --indir your_data_dir --outdir target_dir -
 ```
 - fsq_id: The POI (Point of Interest) ID on Foursquare, e.g., '12345'
 - name: The name of the POI, e.g., 'Subway Chikusa Station'
+- time: The check in time. e.g., '2019-04-24 06:40:42'
 - category: Information about the category of the POI
     - category['id']: The ID of the category, e.g., '4bf58dd8d48988d1fd931735'
     - category['name']: The name of the category, e.g., 'Metro Station'
