@@ -85,7 +85,7 @@ python batch_run.py --pool_size 200  --indir your_data_dir --outdir target_dir -
 ----
 ### Appendix 
 #### Explanation for the Output Fields:
-```
+``` bash 
 - fsq_id: The POI (Point of Interest) ID on Foursquare, e.g., '12345'
 - name: The name of the POI, e.g., 'Subway Chikusa Station'
 - time: The check in time. e.g., '2019-04-24 06:40:42'

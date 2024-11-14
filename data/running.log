@@ -1,0 +1,16 @@
+**************************************************
+Proxy is not used.
+Batch mode is enabled.
+**************************************************
+Total number of URLs needed to crawl:  37
+Start to crawl the checkin metadata of sample_url.csv from the foursquare website...
+  0%|                                                                                                                                                                                      | 0/37 [00:00<?, ?it/s]Error:  The URL https://www.swarmapp.com/c/fxqkBkXMUvD is deleted or hidden.
+ 35%|████████████████████████████████████████████████████████████▊                                                                                                                | 13/37 [00:25<00:47,  1.98s/it]Error:  The URL https://t.co/J8TkQ3ABqY is not a valid foursquare checkin URL.
+ 95%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋         | 35/37 [01:08<00:03,  1.99s/it]Error:  The URL https://www.swarmapp.com/c/ecZvm018guK is deleted or hidden.
+ 97%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎    | 36/37 [01:10<00:01,  1.84s/it]Error:  The URL https://www.swarmapp.com/c/i09ISV6rXOR is an internal server error.
+100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 37/37 [01:11<00:00,  1.94s/it]
+crawl is done!
+Summary of the crawl results:
+Success URLs:  33
+Fail URLs:  4
+data/sample_url.csv done!

@@ -6,9 +6,10 @@ from tools import load_url_list, save
 from tqdm import tqdm
 import json 
 import yaml 
+import pytz 
 import datetime
+import time 
 from fake_useragent import UserAgent
-
 
 class PageNotFoundError(Exception):
     def __init__(self, message):
@@ -19,6 +20,13 @@ class WrongUrlError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+        
+        
+class InternalServerError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+        
 
 class FoursquareCrawler:
     def __init__(self, proxy="none", debug=False, retry_times=4):
@@ -77,6 +85,8 @@ class FoursquareCrawler:
         soup = BeautifulSoup(html.text, "lxml")
         if 'We couldn\'t find the page you\'re looking for.' in soup.text:
             raise PageNotFoundError(f"The URL {url} is deleted or hidden.")
+        if "Internal Server Error" in soup.text:
+            raise InternalServerError(f"The URL {url} is an internal server error.")
         return soup 
 
     def content_parse(self, soup):
@@ -88,6 +98,7 @@ class FoursquareCrawler:
                 fsq_data = {}
                 raw_text = tag.text
                 data = raw_text.replace("fourSq.swarm.page.checkin.SwarmCheckinDetail.init({el: $('body'),", '')
+                data = data.replace("showMap: true,", '')
                 # 将字符串 按照 "checkin:" 和 "venue:" 分割
                 checkin = data.split("checkin: ")[1].split("venue: ")[0][:-1]
                 venue = data.split("venue: ")[1].split("signature: ")[0][:-1]
@@ -95,7 +106,6 @@ class FoursquareCrawler:
                 parsed_venue = json.loads(venue)
                 fsq_data['checkin'] = parsed_checkin
                 fsq_data['venue'] = parsed_venue
-                fsq_data['time'] = parsed_checkin['createdAt']
                 break
         return fsq_data 
 
@@ -107,12 +117,14 @@ class FoursquareCrawler:
         location_stats = parsed_data["venue"]["stats"]
         name = parsed_data["venue"]["name"]
         uid = parsed_data["checkin"]["user"]["id"]
+        gender = parsed_data["checkin"]["user"]["gender"]
         fsq_id = parsed_data["venue"]["id"]
-        time = datetime.datetime.fromtimestamp(parsed_data["time"]).strftime("%Y-%m-%d %H:%M:%S")
+        checkin_time = parsed_data["checkin"]["createdAt"]
+        checkin_time = datetime.datetime.fromtimestamp(checkin_time, pytz.timezone('Asia/Tokyo')).strftime('%Y-%m-%d %H:%M:%S')
 
-        checkin_metadata = {"fsq_id": fsq_id, "name":name, "time": time,
+        checkin_metadata = {"fsq_id": fsq_id, "name":name,  
                         "category": category_infors, "location":location_infors,
-                        "uid": uid, "location_stats": location_stats}
+                        "uid": uid, "gender":gender, "location_stats": location_stats, "checkin_time": checkin_time}
         return checkin_metadata
 
 
@@ -122,7 +134,6 @@ class FoursquareCrawler:
         *输出字段介绍*:
         - fsq_id: foursquare的POI地点id, 例如
         - name: POI的名字, e.g., Subway Chikusa Station
-        - time: 签到的时间, e.g., '2021-07-01 12:00:00'
         - category: 地点的类别信息
             - category['id']: 类别的id, e.g., '4bf58dd8d48988d1fd931735'
             - category['name']: 类别的名字, e.g., 'Metro Station'
@@ -170,6 +181,12 @@ class FoursquareCrawler:
                 tweet_record["reason"] = "PageNotFound"
                 self.fail_urls.append(tweet_record)
                 break
+            except InternalServerError as e:
+                print("Error: ", e)
+                status_code = 4
+                tweet_record["reason"] = "InternalServerError"
+                self.fail_urls.append(tweet_record)
+                break 
             except WrongUrlError as e:
                 print("Error: ", e)
                 status_code = 3 # 错误的URL
@@ -186,6 +203,10 @@ class FoursquareCrawler:
             print("Max retry times reached, failed to extract metadata from the checkin URL: {}".format(url))   
             tweet_record["reason"] = "MaxRetry"
             self.fail_urls.append(tweet_record)
+            # sleep for 10mins 
+            print("Trigger anti-crawling mechanism... \n Sleep for 10 minutes..., and then continue to crawl.")
+            time.sleep(600) 
+            
         
         
         if self.debug_mode:
